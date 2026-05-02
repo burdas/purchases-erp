@@ -7,7 +7,7 @@ export async function getFacturas() {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('factura')
-    .select('*, proveedor(nombre)')
+    .select('*, proveedor(nombre), factura_pedido(pedido_id)')
     .order('created_at', { ascending: false })
 
   if (error) throw new Error(error.message)

@@ -12,8 +12,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { createFactura } from '../_actions'
 import { getProveedores } from '../../proveedores/_actions'
-import { Proveedor } from '@/types'
+import { getPedidosByProveedor } from '../../pedidos/_actions'
+import { Proveedor, Pedido } from '@/types'
 import { toast } from 'sonner'
+import { Checkbox } from '@/components/ui/checkbox'
 
 const facturaSchema = z.object({
   numero_factura: z.string().min(1, 'Número de factura requerido'),
@@ -31,6 +33,8 @@ type FacturaFormValues = z.infer<typeof facturaSchema>
 export default function NuevaFacturaPage() {
   const router = useRouter()
   const [proveedores, setProveedores] = useState<Proveedor[]>([])
+  const [pedidos, setPedidos] = useState<Pedido[]>([])
+  const [selectedPedidos, setSelectedPedidos] = useState<string[]>([])
 
   useEffect(() => {
     getProveedores().then(setProveedores).catch(console.error)
@@ -52,6 +56,19 @@ export default function NuevaFacturaPage() {
     },
   })
 
+  const selectedProveedorId = watch('proveedor_id')
+
+  useEffect(() => {
+    if (selectedProveedorId) {
+      getPedidosByProveedor(selectedProveedorId)
+        .then(setPedidos)
+        .catch(console.error)
+    } else {
+      setPedidos([])
+    }
+    setSelectedPedidos([])
+  }, [selectedProveedorId])
+
   const bruto = watch('importe_bruto')
   const iva = watch('importe_iva')
 
@@ -61,7 +78,12 @@ export default function NuevaFacturaPage() {
 
   const onSubmit = async (data: any) => {
     try {
-      await createFactura(data, [])
+      const pedidosRelacionados = selectedPedidos.map(id => ({
+        pedido_id: id,
+        importe_imputado: data.importe_bruto // Por simplificación en el MVP imputamos el bruto completo
+      }))
+      
+      await createFactura(data, pedidosRelacionados)
       toast.success('Factura registrada correctamente')
       router.push('/facturas')
     } catch (error: any) {
@@ -69,8 +91,16 @@ export default function NuevaFacturaPage() {
     }
   }
 
+  const togglePedido = (pedidoId: string) => {
+    setSelectedPedidos(prev => 
+      prev.includes(pedidoId) 
+        ? prev.filter(id => id !== pedidoId)
+        : [...prev, pedidoId]
+    )
+  }
+
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-3xl mx-auto pb-12">
       <h1 className="text-3xl font-bold tracking-tight mb-8">Registrar Nueva Factura</h1>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <Card>
@@ -153,6 +183,40 @@ export default function NuevaFacturaPage() {
             </div>
           </CardContent>
         </Card>
+
+        {selectedProveedorId && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Relacionar con Pedidos</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {pedidos.length === 0 ? (
+                <p className="text-sm text-gray-500 italic">No hay pedidos registrados para este proveedor.</p>
+              ) : (
+                <div className="space-y-3">
+                  {pedidos.map((pedido) => (
+                    <div key={pedido.id} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50">
+                      <Checkbox 
+                        id={`pedido-${pedido.id}`} 
+                        checked={selectedPedidos.includes(pedido.id)}
+                        onCheckedChange={() => togglePedido(pedido.id)}
+                      />
+                      <label 
+                        htmlFor={`pedido-${pedido.id}`}
+                        className="flex-1 flex justify-between items-center text-sm cursor-pointer"
+                      >
+                        <span className="font-medium">{pedido.numero}</span>
+                        <span className="text-gray-500">{format(new Date(pedido.fecha_pedido), 'dd/MM/yyyy')}</span>
+                        <span className="font-bold">{pedido.importe_total?.toFixed(2)}€</span>
+                        <Badge variant="outline">{pedido.estado.toUpperCase()}</Badge>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         <div className="flex justify-end space-x-4">
           <Button type="button" variant="outline" onClick={() => router.push('/facturas')}>

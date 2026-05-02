@@ -7,7 +7,7 @@ export async function getPedidos() {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('pedido')
-    .select('*, proveedor(nombre)')
+    .select('*, proveedor(nombre), factura_pedido(factura_id)')
     .order('created_at', { ascending: false })
 
   if (error) throw new Error(error.message)
@@ -60,6 +60,18 @@ export async function createPedido(pedidoData: any, lineas: any[]) {
 
   revalidatePath('/pedidos')
   return pedido
+}
+
+export async function getPedidosByProveedor(proveedorId: string) {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('pedido')
+    .select('*')
+    .eq('proveedor_id', proveedorId)
+    .order('created_at', { ascending: false })
+
+  if (error) throw new Error(error.message)
+  return data
 }
 
 export async function updateEstadoPedido(id: string, estado: string) {

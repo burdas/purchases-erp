@@ -52,6 +52,7 @@ export default async function PedidosPage() {
               <TableHead>Fecha</TableHead>
               <TableHead>Proveedor</TableHead>
               <TableHead>Total</TableHead>
+              <TableHead>Facturas</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
@@ -59,7 +60,7 @@ export default async function PedidosPage() {
           <TableBody>
             {pedidos.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
+                <TableCell colSpan={7} className="h-24 text-center">
                   No se encontraron pedidos.
                 </TableCell>
               </TableRow>
@@ -72,6 +73,15 @@ export default async function PedidosPage() {
                   </TableCell>
                   <TableCell>{pedido.proveedor?.nombre}</TableCell>
                   <TableCell>{pedido.importe_total?.toFixed(2)}€</TableCell>
+                  <TableCell>
+                    {pedido.factura_pedido?.length > 0 ? (
+                      <Badge variant="secondary">
+                        {pedido.factura_pedido.length} {pedido.factura_pedido.length === 1 ? 'factura' : 'facturas'}
+                      </Badge>
+                    ) : (
+                      <span className="text-gray-400 text-xs">-</span>
+                    )}
+                  </TableCell>
                   <TableCell>
                     <Badge className={statusColors[pedido.estado] || 'bg-gray-100'} variant="outline">
                       {pedido.estado.toUpperCase()}

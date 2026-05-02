@@ -51,6 +51,7 @@ export default async function FacturasPage() {
               <TableHead>Fecha</TableHead>
               <TableHead>Proveedor</TableHead>
               <TableHead>Total</TableHead>
+              <TableHead>Pedidos</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
@@ -58,7 +59,7 @@ export default async function FacturasPage() {
           <TableBody>
             {facturas.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
+                <TableCell colSpan={7} className="h-24 text-center">
                   No se encontraron facturas.
                 </TableCell>
               </TableRow>
@@ -71,6 +72,15 @@ export default async function FacturasPage() {
                   </TableCell>
                   <TableCell>{factura.proveedor?.nombre}</TableCell>
                   <TableCell>{factura.importe_total?.toFixed(2)}€</TableCell>
+                  <TableCell>
+                    {factura.factura_pedido?.length > 0 ? (
+                      <Badge variant="secondary">
+                        {factura.factura_pedido.length} {factura.factura_pedido.length === 1 ? 'pedido' : 'pedidos'}
+                      </Badge>
+                    ) : (
+                      <span className="text-gray-400 text-xs">-</span>
+                    )}
+                  </TableCell>
                   <TableCell>
                     <Badge className={statusColors[factura.estado] || 'bg-gray-100'} variant="outline">
                       {factura.estado.toUpperCase()}
