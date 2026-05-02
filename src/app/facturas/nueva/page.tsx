@@ -81,7 +81,7 @@ export default function NuevaFacturaPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="proveedor_id">Proveedor</Label>
-                <Select onValueChange={(value) => setValue('proveedor_id', value)}>
+                <Select onValueChange={(value) => setValue('proveedor_id', (value ?? '') as string)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar proveedor" />
                   </SelectTrigger>

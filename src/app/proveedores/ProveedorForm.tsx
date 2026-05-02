@@ -13,7 +13,7 @@ const providerSchema = z.object({
   nif: z.string().optional(),
   email_contacto: z.string().email('Email inválido').optional().or(z.literal('')),
   telefono: z.string().optional(),
-  activo: z.boolean().default(true),
+  activo: z.boolean(),
 })
 
 type ProviderFormValues = z.infer<typeof providerSchema>

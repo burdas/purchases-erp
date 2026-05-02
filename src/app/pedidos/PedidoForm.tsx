@@ -16,7 +16,7 @@ import { getProveedores } from '../proveedores/_actions'
 const lineaSchema = z.object({
   descripcion: z.string().min(1, 'Descripción requerida'),
   cantidad: z.number().min(1, 'Mínimo 1'),
-  unidad: z.string().default('ud'),
+  unidad: z.string(),
   precio_unitario: z.number().min(0, 'Precio inválido'),
   importe_linea: z.number(),
 })
@@ -24,7 +24,7 @@ const lineaSchema = z.object({
 const pedidoSchema = z.object({
   proveedor_id: z.string().uuid('Proveedor requerido'),
   numero: z.string().min(1, 'Número requerido'),
-  fecha_pedido: z.string().default(() => new Date().toISOString()),
+  fecha_pedido: z.string().min(1, 'Fecha requerida'),
   fecha_entrega_esperada: z.string().optional().nullable(),
   notas: z.string().optional(),
   lineas: z.array(lineaSchema).min(1, 'Debe haber al menos una línea'),
@@ -84,7 +84,7 @@ export function PedidoForm({ onSubmit, onCancel }: PedidoFormProps) {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="proveedor_id">Proveedor</Label>
-              <Select onValueChange={(value) => setValue('proveedor_id', value)}>
+              <Select onValueChange={(value) => setValue('proveedor_id', (value ?? '') as string)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar proveedor" />
                 </SelectTrigger>

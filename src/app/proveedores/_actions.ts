@@ -1,14 +1,10 @@
 'use server'
 
-import { createClient as createSimpleClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase-server'
 import { revalidatePath } from 'next/cache'
 
 export async function getProveedores() {
-  // Cliente directo sin lógica de cookies para probar
-  const supabase = createSimpleClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const supabase = await createClient()
   
   const { data, error, status, statusText } = await supabase
     .from('proveedor')
