@@ -1,0 +1,128 @@
+// ============================================================
+// Modelo de datos — Gestión de Compras y Facturación (MVP)
+// Stack: Supabase (PostgreSQL)
+// v3: detección de duplicados via constraint único en factura
+// ============================================================
+
+Project compras_mvp {
+  database_type: 'PostgreSQL'
+  Note: 'MVP para gestión de compras: pedidos, recepción y facturas.'
+}
+
+// ------------------------------------------------------------
+// USUARIO
+// ------------------------------------------------------------
+Table usuario {
+  id         uuid        [pk, default: `gen_random_uuid()`]
+  nombre     varchar     [not null]
+  email      varchar     [not null, unique]
+  rol        varchar     [not null, note: 'compras | admin | direccion']
+  activo     boolean     [not null, default: true]
+  created_at timestamptz [not null, default: `now()`]
+
+  Note: 'Usuarios del sistema. El rol controla los permisos de acceso.'
+}
+
+// ------------------------------------------------------------
+// PROVEEDOR
+// ------------------------------------------------------------
+Table proveedor {
+  id             uuid        [pk, default: `gen_random_uuid()`]
+  nombre         varchar     [not null]
+  nif            varchar     [unique, note: 'CIF/NIF del proveedor']
+  email_contacto varchar
+  telefono       varchar
+  activo         boolean     [not null, default: true]
+  created_at     timestamptz [not null, default: `now()`]
+
+  Note: 'Catálogo de proveedores homologados.'
+}
+
+// ------------------------------------------------------------
+// PEDIDO
+// ------------------------------------------------------------
+Table pedido {
+  id                     uuid          [pk, default: `gen_random_uuid()`]
+  numero                 varchar       [not null, unique, note: 'Número legible: PED-2024-0001']
+  proveedor_id           uuid          [not null, ref: > proveedor.id]
+  creado_por             uuid          [not null, ref: > usuario.id]
+  estado                 varchar       [not null, default: 'borrador', note: 'borrador | enviado | confirmado | recibido_parcial | cerrado | cancelado']
+  importe_total          numeric(12,2)
+  fecha_pedido           timestamptz   [not null, default: `now()`]
+  fecha_entrega_esperada date
+  notas                  text
+
+  // Incidencia inline
+  tiene_incidencia       boolean       [not null, default: false]
+  motivo_incidencia      text          [note: 'Descripción del problema detectado en el pedido']
+
+  created_at             timestamptz   [not null, default: `now()`]
+  updated_at             timestamptz   [not null, default: `now()`]
+
+  Note: 'Cabecera del pedido al proveedor. El estado se recalcula a partir de sus líneas.'
+}
+
+// ------------------------------------------------------------
+// LINEA_PEDIDO
+// ------------------------------------------------------------
+Table linea_pedido {
+  id                uuid          [pk, default: `gen_random_uuid()`]
+  pedido_id         uuid          [not null, ref: > pedido.id]
+  descripcion       varchar       [not null]
+  cantidad          integer       [not null]
+  unidad            varchar       [note: 'ud | kg | l | m | caja ...']
+  precio_unitario   numeric(12,2) [not null]
+  importe_linea     numeric(12,2) [not null, note: 'cantidad * precio_unitario']
+
+  // Recepción colapsada en la línea
+  cantidad_recibida integer       [not null, default: 0]
+  fecha_recepcion   timestamptz
+  estado_recepcion  varchar       [not null, default: 'pendiente', note: 'pendiente | recibido_parcial | recibido_completo']
+
+  Note: 'Líneas del pedido. La recepción se registra directamente aquí en el MVP.'
+}
+
+// ------------------------------------------------------------
+// FACTURA
+// ------------------------------------------------------------
+Table factura {
+  id                  uuid          [pk, default: `gen_random_uuid()`]
+  numero_factura      varchar       [not null]
+  proveedor_id        uuid          [not null, ref: > proveedor.id]
+  importe_bruto       numeric(12,2) [not null]
+  importe_iva         numeric(12,2) [not null, default: 0]
+  importe_total       numeric(12,2) [not null]
+  estado              varchar       [not null, default: 'recibida', note: 'recibida | en_validacion | aprobada | rechazada | pagada']
+  fecha_factura       date          [not null]
+  fecha_recepcion_doc timestamptz   [not null, default: `now()`]
+  fecha_vencimiento   date
+  notas               text
+
+  // Incidencia inline
+  tiene_incidencia    boolean       [not null, default: false]
+  motivo_incidencia   text          [note: 'Descripción del problema detectado en la factura']
+
+  created_at          timestamptz   [not null, default: `now()`]
+  updated_at          timestamptz   [not null, default: `now()`]
+
+  indexes {
+    (numero_factura, proveedor_id) [unique, name: 'uq_factura_proveedor']
+  }
+
+  Note: 'Facturas recibidas de proveedores. La constraint única sobre (numero_factura, proveedor_id) previene duplicados a nivel de base de datos.'
+}
+
+// ------------------------------------------------------------
+// FACTURA_PEDIDO
+// ------------------------------------------------------------
+Table factura_pedido {
+  factura_id       uuid          [not null, ref: > factura.id]
+  pedido_id        uuid          [not null, ref: > pedido.id]
+  importe_imputado numeric(12,2) [not null, note: 'Parte del importe de la factura asignada a este pedido']
+
+  indexes {
+    (factura_id, pedido_id) [pk]
+  }
+
+  Note: 'Relación N:M entre facturas y pedidos. Facilita el matching de importes.'
+}
