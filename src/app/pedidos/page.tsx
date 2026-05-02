@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Eye, AlertCircle } from 'lucide-react'
+import { Plus, Eye, AlertCircle, FileText } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 
@@ -53,7 +53,7 @@ export default async function PedidosPage() {
               <TableHead>Proveedor</TableHead>
               <TableHead>Creado por</TableHead> {/* Columna añadida */}
               <TableHead>Total</TableHead>
-              <TableHead>Facturas</TableHead>
+              <TableHead>Factura</TableHead>
               <TableHead>Incidencia</TableHead> {/* Columna añadida */}
               <TableHead>Estado</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
@@ -77,9 +77,9 @@ export default async function PedidosPage() {
                   <TableCell>{pedido.usuario?.nombre}</TableCell> {/* Campo añadido */}
                   <TableCell>{pedido.importe_total?.toFixed(2)}€</TableCell>
                   <TableCell>
-                    {pedido.factura_pedido?.length > 0 ? (
+                    {pedido.factura_id ? (
                       <Badge variant="secondary">
-                        {pedido.factura_pedido.length} {pedido.factura_pedido.length === 1 ? 'factura' : 'facturas'}
+                        <FileText className="h-3 w-3 mr-1" /> Facturado
                       </Badge>
                     ) : (
                       <span className="text-gray-400 text-xs">-</span>

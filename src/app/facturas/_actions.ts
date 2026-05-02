@@ -7,14 +7,14 @@ export async function getFacturas() {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('factura')
-    .select('*, proveedor(nombre), factura_pedido(pedido_id)')
+    .select('*, proveedor(nombre), pedido(id, numero)')
     .order('created_at', { ascending: false })
 
   if (error) throw new Error(error.message)
   return data
 }
 
-export async function createFactura(facturaData: any, pedidosRelacionados: { pedido_id: string, importe_imputado: number }[]) {
+export async function createFactura(facturaData: any, pedidosRelacionados: { pedido_id: string }[]) {
   const supabase = await createClient()
 
   // Sanitize data: convert empty strings to null for optional fields
@@ -33,18 +33,16 @@ export async function createFactura(facturaData: any, pedidosRelacionados: { ped
 
   if (facturaError) throw new Error(facturaError.message)
 
+  // Link invoices to orders (1:1 per order)
   if (pedidosRelacionados.length > 0) {
-    const relations = pedidosRelacionados.map(rel => ({
-      factura_id: factura.id,
-      pedido_id: rel.pedido_id,
-      importe_imputado: rel.importe_imputado
-    }))
+    for (const rel of pedidosRelacionados) {
+      const { error: updateError } = await supabase
+        .from('pedido')
+        .update({ factura_id: factura.id })
+        .eq('id', rel.pedido_id)
 
-    const { error: relError } = await supabase
-      .from('factura_pedido')
-      .insert(relations)
-
-    if (relError) throw new Error(relError.message)
+      if (updateError) throw new Error(updateError.message)
+    }
   }
 
   revalidatePath('/facturas')
