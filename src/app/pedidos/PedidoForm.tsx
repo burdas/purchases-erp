@@ -9,9 +9,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Trash2, Plus, AlertCircle } from 'lucide-react'
-import { Proveedor, Usuario } from '@/types'
-import { getProveedores, getUsuarios } from './_actions'
+import { Proveedor } from '@/types'
+import { getProveedores } from '../proveedores/_actions'
+import { getUsuarios } from './_actions'
 
 const lineaSchema = z.object({
   descripcion: z.string().min(1, 'Descripción requerida'),
@@ -28,7 +30,7 @@ const pedidoSchema = z.object({
   fecha_pedido: z.string().min(1, 'Fecha requerida'),
   fecha_entrega_esperada: z.string().optional().nullable(),
   notas: z.string().optional(),
-  tiene_incidencia: z.boolean().default(false), // Campo añadido
+  tiene_incidencia: z.boolean(), // Campo añadido
   motivo_incidencia: z.string().optional(), // Campo añadido
   lineas: z.array(lineaSchema).min(1, 'Debe haber al menos una línea'),
 })
@@ -42,7 +44,7 @@ interface PedidoFormProps {
 
 export function PedidoForm({ onSubmit, onCancel }: PedidoFormProps) {
   const [proveedores, setProveedores] = useState<Proveedor[]>([])
-  const [usuarios, setUsuarios] = useState<Usuario[]>([]) // Estado para usuarios
+  const [usuarios, setUsuarios] = useState<any[]>([]) // Estado para usuarios
 
   useEffect(() => {
     getProveedores().then(setProveedores).catch(console.error)
@@ -167,25 +169,12 @@ export function PedidoForm({ onSubmit, onCancel }: PedidoFormProps) {
                   {errors.motivo_incidencia && <p className="text-sm text-red-500">{errors.motivo_incidencia.message}</p>}
                 </div>
               )}
-            </div>
+            </div> {/* Closing the div for form elements */}
           </CardContent>
         </Card>
+      </div> {/* Closing the outer grid div */}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Notas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <textarea
-              className="w-full min-h-[150px] rounded-md border border-input bg-background px-3 py-2 text-sm"
-              {...register('notas')}
-              placeholder="Notas adicionales para el pedido..."
-            />
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
+      <Card> {/* This is the card for the lines of order */}
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Líneas de Pedido</CardTitle>
           <Button
@@ -259,7 +248,7 @@ export function PedidoForm({ onSubmit, onCancel }: PedidoFormProps) {
         </CardContent>
       </Card>
 
-      <div className="flex justify-end space-x-4">
+      <div className="flex justify-end space-x-4"> {/* This is the final button group */}
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancelar
         </Button>
@@ -272,88 +261,4 @@ export function PedidoForm({ onSubmit, onCancel }: PedidoFormProps) {
 }
 
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Líneas de Pedido</CardTitle>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => append({ descripcion: '', cantidad: 1, unidad: 'ud', precio_unitario: 0, importe_linea: 0 })}
-          >
-            <Plus className="mr-2 h-4 w-4" /> Añadir Línea
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {fields.map((field, index) => (
-              <div key={field.id} className="grid grid-cols-12 gap-4 items-end border-b pb-4 last:border-0">
-                <div className="col-span-5 space-y-2">
-                  <Label>Descripción</Label>
-                  <Input {...register(`lineas.${index}.descripcion` as const)} />
-                </div>
-                <div className="col-span-2 space-y-2">
-                  <Label>Cant.</Label>
-                  <Input
-                    type="number"
-                    {...register(`lineas.${index}.cantidad` as const, {
-                      valueAsNumber: true,
-                      onChange: () => updateImporte(index),
-                    })}
-                  />
-                </div>
-                <div className="col-span-2 space-y-2">
-                  <Label>Precio</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    {...register(`lineas.${index}.precio_unitario` as const, {
-                      valueAsNumber: true,
-                      onChange: () => updateImporte(index),
-                    })}
-                  />
-                </div>
-                <div className="col-span-2 space-y-2">
-                  <Label>Importe</Label>
-                  <Input
-                    type="number"
-                    readOnly
-                    className="bg-gray-50"
-                    {...register(`lineas.${index}.importe_linea` as const, { valueAsNumber: true })}
-                  />
-                </div>
-                <div className="col-span-1">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => remove(index)}
-                    disabled={fields.length === 1}
-                  >
-                    <Trash2 className="h-4 w-4 text-red-500" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex justify-end mt-6">
-            <div className="text-right">
-              <p className="text-sm text-gray-500">Total Pedido</p>
-              <p className="text-3xl font-bold">{total.toFixed(2)}€</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="flex justify-end space-x-4">
-        <Button type="button" variant="outline" onClick={onCancel}>
-          Cancelar
-        </Button>
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Guardando...' : 'Guardar Pedido'}
-        </Button>
-      </div>
-    </form>
-  )
-}
+      

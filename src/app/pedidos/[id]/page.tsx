@@ -1,5 +1,8 @@
 import { getPedido, updateEstadoPedido } from '../_actions'
 import { Badge } from '@/components/ui/badge'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Table,
@@ -128,7 +131,7 @@ export default async function PedidoDetailPage({ params }: { params: Promise<{ i
           </Card>
 
           {/* Sección para la recepción de líneas de pedido si fuera necesario editarla */}
-          {pedido.linea_pedido && pedido.linea_pedido.some(linea => linea.estado_recepcion !== 'recibido_completo') && (
+          {pedido.linea_pedido && pedido.linea_pedido.some((linea: any) => linea.estado_recepcion !== 'recibido_completo') && (
             <Card>
               <CardHeader>
                 <CardTitle>Recepción de Líneas</CardTitle>
