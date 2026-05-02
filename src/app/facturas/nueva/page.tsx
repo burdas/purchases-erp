@@ -10,12 +10,14 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { createFactura } from '../_actions'
 import { getProveedores } from '../../proveedores/_actions'
 import { getPedidosByProveedor } from '../../pedidos/_actions'
 import { Proveedor, Pedido } from '@/types'
 import { toast } from 'sonner'
 import { Checkbox } from '@/components/ui/checkbox'
+import { format } from 'date-fns'
 
 const facturaSchema = z.object({
   numero_factura: z.string().min(1, 'Número de factura requerido'),
