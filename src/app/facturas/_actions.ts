@@ -21,7 +21,8 @@ export async function createFactura(facturaData: any, pedidosRelacionados: { ped
   const sanitizedFactura = {
     ...facturaData,
     fecha_vencimiento: facturaData.fecha_vencimiento || null,
-    notas: facturaData.notas || null
+    notas: facturaData.notas || null,
+    motivo_incidencia: facturaData.motivo_incidencia || null
   }
 
   const { data: factura, error: facturaError } = await supabase

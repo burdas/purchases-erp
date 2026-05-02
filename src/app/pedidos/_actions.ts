@@ -26,6 +26,18 @@ export async function getPedido(id: string) {
   return data
 }
 
+export async function getUsuarios() {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('usuario')
+    .select('*')
+    .eq('activo', true)
+    .order('nombre', { ascending: true })
+
+  if (error) throw new Error(error.message)
+  return data
+}
+
 export async function createPedido(pedidoData: any, lineas: any[]) {
   const supabase = await createClient()
   
@@ -33,7 +45,9 @@ export async function createPedido(pedidoData: any, lineas: any[]) {
   const sanitizedPedido = {
     ...pedidoData,
     fecha_entrega_esperada: pedidoData.fecha_entrega_esperada || null,
-    notas: pedidoData.notas || null
+    notas: pedidoData.notas || null,
+    motivo_incidencia: pedidoData.motivo_incidencia || null,
+    creado_por: pedidoData.creado_por || null
   }
 
   const { data: pedido, error: pedidoError } = await supabase

@@ -10,10 +10,10 @@ INSERT INTO usuario (nombre, email, rol) VALUES
 ('Compras Manager', 'compras@erp.com', 'compras');
 
 -- Seed data for Pedidos
-INSERT INTO pedido (numero, proveedor_id, creado_por, estado, importe_total, fecha_pedido, fecha_entrega_esperada) VALUES
-('PED-2024-001', (SELECT id FROM proveedor WHERE nif = 'A12345678'), (SELECT id FROM usuario WHERE email = 'compras@erp.com'), 'borrador', 150.00, '2024-01-10', '2024-01-20'),
-('PED-2024-002', (SELECT id FROM proveedor WHERE nif = 'B87654321'), (SELECT id FROM usuario WHERE email = 'compras@erp.com'), 'enviado', 75.50, '2024-01-12', '2024-01-15'),
-('PED-2024-003', (SELECT id FROM proveedor WHERE nif = 'G11223344'), (SELECT id FROM usuario WHERE email = 'compras@erp.com'), 'confirmado', 500.00, '2024-01-15', '2024-01-25');
+INSERT INTO pedido (numero, proveedor_id, creado_por, estado, importe_total, fecha_pedido, fecha_entrega_esperada, tiene_incidencia, motivo_incidencia) VALUES
+('PED-2024-001', (SELECT id FROM proveedor WHERE nif = 'A12345678'), (SELECT id FROM usuario WHERE email = 'compras@erp.com'), 'borrador', 150.00, '2024-01-10', '2024-01-20', false, NULL),
+('PED-2024-002', (SELECT id FROM proveedor WHERE nif = 'B87654321'), (SELECT id FROM usuario WHERE email = 'compras@erp.com'), 'enviado', 75.50, '2024-01-12', '2024-01-15', true, 'Retraso en la entrega por parte del proveedor.'),
+('PED-2024-003', (SELECT id FROM proveedor WHERE nif = 'G11223344'), (SELECT id FROM usuario WHERE email = 'compras@erp.com'), 'confirmado', 500.00, '2024-01-15', '2024-01-25', false, NULL);
 
 -- Seed data for Lineas de Pedido
 INSERT INTO linea_pedido (pedido_id, descripcion, cantidad, unidad, precio_unitario, importe_linea) VALUES
@@ -23,9 +23,9 @@ INSERT INTO linea_pedido (pedido_id, descripcion, cantidad, unidad, precio_unita
 ((SELECT id FROM pedido WHERE numero = 'PED-2024-003'), 'Mantenimiento preventivo climatización Q1', 1, 'ud', 500.00, 500.00);
 
 -- Seed data for Facturas
-INSERT INTO factura (numero_factura, proveedor_id, importe_bruto, importe_iva, importe_total, estado, fecha_factura, fecha_vencimiento) VALUES
-('FAC-2024-101', (SELECT id FROM proveedor WHERE nif = 'A12345678'), 150.00, 31.50, 181.50, 'recibida', '2024-01-20', '2024-02-20'),
-('FAC-2024-202', (SELECT id FROM proveedor WHERE nif = 'B87654321'), 75.50, 15.85, 91.35, 'aprobada', '2024-01-18', '2024-02-18');
+INSERT INTO factura (numero_factura, proveedor_id, importe_bruto, importe_iva, importe_total, estado, fecha_factura, fecha_vencimiento, tiene_incidencia, motivo_incidencia) VALUES
+('FAC-2024-101', (SELECT id FROM proveedor WHERE nif = 'A12345678'), 150.00, 31.50, 181.50, 'recibida', '2024-01-20', '2024-02-20', false, NULL),
+('FAC-2024-202', (SELECT id FROM proveedor WHERE nif = 'B87654321'), 75.50, 15.85, 91.35, 'aprobada', '2024-01-18', '2024-02-18', true, 'Falta documentación adicional.');
 
 -- Seed data for Factura_Pedido (Relación Facturas con Pedidos)
 INSERT INTO factura_pedido (factura_id, pedido_id, importe_imputado) VALUES
