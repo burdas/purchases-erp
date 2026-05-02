@@ -29,13 +29,16 @@ export async function getPedido(id: string) {
 export async function createPedido(pedidoData: any, lineas: any[]) {
   const supabase = await createClient()
   
-  // Start a transaction-like process
-  // Note: Supabase doesn't support multi-table transactions easily in a single call without RPC
-  // For MVP, we'll do it sequentially
-  
+  // Sanitize data: convert empty strings to null for optional fields
+  const sanitizedPedido = {
+    ...pedidoData,
+    fecha_entrega_esperada: pedidoData.fecha_entrega_esperada || null,
+    notas: pedidoData.notas || null
+  }
+
   const { data: pedido, error: pedidoError } = await supabase
     .from('pedido')
-    .insert([pedidoData])
+    .insert([sanitizedPedido])
     .select()
     .single()
 

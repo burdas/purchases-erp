@@ -17,9 +17,16 @@ export async function getFacturas() {
 export async function createFactura(facturaData: any, pedidosRelacionados: { pedido_id: string, importe_imputado: number }[]) {
   const supabase = await createClient()
 
+  // Sanitize data: convert empty strings to null for optional fields
+  const sanitizedFactura = {
+    ...facturaData,
+    fecha_vencimiento: facturaData.fecha_vencimiento || null,
+    notas: facturaData.notas || null
+  }
+
   const { data: factura, error: facturaError } = await supabase
     .from('factura')
-    .insert([facturaData])
+    .insert([sanitizedFactura])
     .select()
     .single()
 
