@@ -51,8 +51,10 @@ export default async function PedidosPage() {
               <TableHead>Número</TableHead>
               <TableHead>Fecha</TableHead>
               <TableHead>Proveedor</TableHead>
+              <TableHead>Creado por</TableHead> {/* Columna añadida */}
               <TableHead>Total</TableHead>
               <TableHead>Facturas</TableHead>
+              <TableHead>Incidencia</TableHead> {/* Columna añadida */}
               <TableHead>Estado</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
@@ -60,7 +62,7 @@ export default async function PedidosPage() {
           <TableBody>
             {pedidos.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
+                <TableCell colSpan={9} className="h-24 text-center"> {/* Colspan aumentado */}
                   No se encontraron pedidos.
                 </TableCell>
               </TableRow>
@@ -72,6 +74,7 @@ export default async function PedidosPage() {
                     {format(new Date(pedido.fecha_pedido), 'dd MMM yyyy', { locale: es })}
                   </TableCell>
                   <TableCell>{pedido.proveedor?.nombre}</TableCell>
+                  <TableCell>{pedido.usuario?.nombre}</TableCell> {/* Campo añadido */}
                   <TableCell>{pedido.importe_total?.toFixed(2)}€</TableCell>
                   <TableCell>
                     {pedido.factura_pedido?.length > 0 ? (
@@ -80,6 +83,11 @@ export default async function PedidosPage() {
                       </Badge>
                     ) : (
                       <span className="text-gray-400 text-xs">-</span>
+                    )}
+                  </TableCell>
+                  <TableCell> {/* Campo añadido: Incidencia */}
+                    {pedido.tiene_incidencia && (
+                      <AlertCircle className="h-4 w-4 text-amber-500" />
                     )}
                   </TableCell>
                   <TableCell>

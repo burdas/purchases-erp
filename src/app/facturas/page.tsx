@@ -52,6 +52,8 @@ export default async function FacturasPage() {
               <TableHead>Proveedor</TableHead>
               <TableHead>Total</TableHead>
               <TableHead>Pedidos</TableHead>
+              <TableHead>Fecha Recepción Doc.</TableHead> {/* Columna añadida */}
+              <TableHead>Incidencia</TableHead> {/* Columna añadida */}
               <TableHead>Estado</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
@@ -59,7 +61,7 @@ export default async function FacturasPage() {
           <TableBody>
             {facturas.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
+                <TableCell colSpan={9} className="h-24 text-center"> {/* Colspan aumentado */}
                   No se encontraron facturas.
                 </TableCell>
               </TableRow>
@@ -79,6 +81,14 @@ export default async function FacturasPage() {
                       </Badge>
                     ) : (
                       <span className="text-gray-400 text-xs">-</span>
+                    )}
+                  </TableCell>
+                  <TableCell> {/* Campo añadido: Fecha Recepción Doc */}
+                    {factura.fecha_recepcion_doc ? format(new Date(factura.fecha_recepcion_doc), 'dd/MM/yyyy HH:mm') : '-'}
+                  </TableCell>
+                  <TableCell> {/* Campo añadido: Incidencia */}
+                    {factura.tiene_incidencia && (
+                      <AlertCircle className="h-4 w-4 text-amber-500" />
                     )}
                   </TableCell>
                   <TableCell>
