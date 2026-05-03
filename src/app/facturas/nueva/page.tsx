@@ -113,13 +113,18 @@ export default function NuevaFacturaPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="proveedor_id">Proveedor</Label>
-                <Select onValueChange={(value) => setValue('proveedor_id', (value ?? '') as string)}>
+                <Select 
+                  value={selectedProveedorId} 
+                  onValueChange={(value) => setValue('proveedor_id', (value ?? '') as string)}
+                >
                   <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar proveedor" />
+                    <SelectValue placeholder="Seleccionar proveedor">
+                      {proveedores.find(p => p.id === selectedProveedorId)?.nombre}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {proveedores.map((p) => (
-                      <SelectItem key={p.id} value={p.id}>
+                      <SelectItem key={p.id} value={p.id} label={p.nombre}>
                         {p.nombre}
                       </SelectItem>
                     ))}

@@ -2,12 +2,13 @@
 
 import { createClient } from '@/lib/supabase-server'
 import { revalidatePath } from 'next/cache'
+import { Pedido, LineaPedido } from '@/types'
 
 export async function getPedidos() {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('pedido')
-    .select('*, proveedor(nombre), factura(id, numero_factura)')
+    .select('*, proveedor(nombre), factura(id, numero_factura), usuario(nombre)')
     .order('created_at', { ascending: false })
 
   if (error) throw new Error(error.message)
@@ -18,7 +19,7 @@ export async function getPedido(id: string) {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('pedido')
-    .select('*, proveedor(*), linea_pedido(*)')
+    .select('*, proveedor(*), linea_pedido(*), usuario(nombre)')
     .eq('id', id)
     .single()
 
@@ -38,7 +39,7 @@ export async function getUsuarios() {
   return data
 }
 
-export async function createPedido(pedidoData: any, lineas: any[]) {
+export async function createPedido(pedidoData: Partial<Pedido>, lineas: Partial<LineaPedido>[]) {
   const supabase = await createClient()
   
   // Sanitize data: convert empty strings to null for optional fields
@@ -74,6 +75,51 @@ export async function createPedido(pedidoData: any, lineas: any[]) {
 
   revalidatePath('/pedidos')
   return pedido
+}
+
+export async function updatePedido(id: string, pedidoData: Partial<Pedido>, lineas: Partial<LineaPedido>[]) {
+  const supabase = await createClient()
+  
+  // Sanitize data
+  const sanitizedPedido = {
+    ...pedidoData,
+    fecha_entrega_esperada: pedidoData.fecha_entrega_esperada || null,
+    notas: pedidoData.notas || null,
+    motivo_incidencia: pedidoData.motivo_incidencia || null,
+    creado_por: pedidoData.creado_por || null,
+    updated_at: new Date().toISOString()
+  }
+
+  const { error: pedidoError } = await supabase
+    .from('pedido')
+    .update(sanitizedPedido)
+    .eq('id', id)
+
+  if (pedidoError) throw new Error(pedidoError.message)
+
+  // For lines, the simplest approach for MVP is delete and re-insert
+  // though for production a more surgical update is preferred.
+  const { error: deleteError } = await supabase
+    .from('linea_pedido')
+    .delete()
+    .eq('pedido_id', id)
+
+  if (deleteError) throw new Error(deleteError.message)
+
+  const lineasWithPedidoId = lineas.map(linea => ({
+    ...linea,
+    pedido_id: id
+  }))
+
+  const { error: lineasError } = await supabase
+    .from('linea_pedido')
+    .insert(lineasWithPedidoId)
+
+  if (lineasError) throw new Error(lineasError.message)
+
+  revalidatePath('/pedidos')
+  revalidatePath(`/pedidos/${id}`)
+  return { success: true }
 }
 
 export async function getPedidosByProveedor(proveedorId: string) {

@@ -45,6 +45,10 @@ export default async function PedidoDetailPage({ params }: { params: Promise<{ i
         <Badge className={statusColors[pedido.estado] || 'bg-gray-100'} variant="outline">
           {pedido.estado.toUpperCase()}
         </Badge>
+        <div className="flex-1" />
+        <Link href={`/pedidos/${id}/edit`}>
+          <Button variant="outline">Editar Pedido</Button>
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -119,6 +123,12 @@ export default async function PedidoDetailPage({ params }: { params: Promise<{ i
                 <p className="text-sm"><span className="text-gray-500">Entrega Esperada:</span> {format(new Date(pedido.fecha_entrega_esperada), 'dd/MM/yyyy')}</p>
               )}
               <p className="text-sm"><span className="text-gray-500">Fecha Recepción Doc.:</span> {pedido.fecha_recepcion_doc ? format(new Date(pedido.fecha_recepcion_doc), 'dd/MM/yyyy HH:mm') : '-'}</p> {/* Campo añadido */}
+              {pedido.notas && (
+                <div className="pt-2 border-t">
+                  <p className="text-sm font-semibold text-gray-500">Notas:</p>
+                  <p className="text-sm whitespace-pre-wrap">{pedido.notas}</p>
+                </div>
+              )}
               {pedido.tiene_incidencia && (
                 <div className="pt-2 border-t">
                   <p className="text-sm text-red-500 font-semibold flex items-center gap-1">

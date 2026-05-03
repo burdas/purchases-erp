@@ -38,11 +38,12 @@ const pedidoSchema = z.object({
 type PedidoFormValues = z.infer<typeof pedidoSchema>
 
 interface PedidoFormProps {
+  initialData?: any
   onSubmit: (data: PedidoFormValues) => void
   onCancel: () => void
 }
 
-export function PedidoForm({ onSubmit, onCancel }: PedidoFormProps) {
+export function PedidoForm({ initialData, onSubmit, onCancel }: PedidoFormProps) {
   const [proveedores, setProveedores] = useState<Proveedor[]>([])
   const [usuarios, setUsuarios] = useState<any[]>([]) // Estado para usuarios
 
@@ -57,16 +58,24 @@ export function PedidoForm({ onSubmit, onCancel }: PedidoFormProps) {
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<PedidoFormValues>({
     resolver: zodResolver(pedidoSchema),
-    defaultValues: {
+    defaultValues: initialData || {
       numero: `PED-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
       fecha_pedido: new Date().toISOString().split('T')[0],
       lineas: [{ descripcion: '', cantidad: 1, unidad: 'ud', precio_unitario: 0, importe_linea: 0 }],
       tiene_incidencia: false, // Valor por defecto para incidencia
     },
   })
+
+  // Update form when initialData changes (for example if it's fetched asynchronously)
+  useEffect(() => {
+    if (initialData) {
+      reset(initialData)
+    }
+  }, [initialData, reset])
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -76,6 +85,8 @@ export function PedidoForm({ onSubmit, onCancel }: PedidoFormProps) {
   const lineas = watch('lineas')
   const total = lineas.reduce((acc, curr) => acc + (curr.importe_linea || 0), 0)
   const tieneIncidencia = watch('tiene_incidencia') // Observar el estado de incidencia
+  const proveedorId = watch('proveedor_id')
+  const creadoPor = watch('creado_por')
 
   const updateImporte = (index: number) => {
     const cantidad = watch(`lineas.${index}.cantidad`)
@@ -85,7 +96,7 @@ export function PedidoForm({ onSubmit, onCancel }: PedidoFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Información General</CardTitle>
@@ -94,9 +105,14 @@ export function PedidoForm({ onSubmit, onCancel }: PedidoFormProps) {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="proveedor_id">Proveedor</Label>
-                <Select onValueChange={(value) => setValue('proveedor_id', (value ?? '') as string)}>
+                <Select 
+                  value={proveedorId || ''} 
+                  onValueChange={(value) => setValue('proveedor_id', value as string)}
+                >
                   <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar proveedor" />
+                    <SelectValue placeholder="Seleccionar proveedor">
+                      {proveedores.find(p => p.id === proveedorId)?.nombre}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {proveedores.map((p) => (
@@ -110,9 +126,14 @@ export function PedidoForm({ onSubmit, onCancel }: PedidoFormProps) {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="creado_por">Solicitante</Label> {/* Campo añadido */}
-                <Select onValueChange={(value) => setValue('creado_por', (value ?? '') as string)}>
+                <Select 
+                  value={creadoPor || ''} 
+                  onValueChange={(value) => setValue('creado_por', value as string)}
+                >
                   <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar solicitante" />
+                    <SelectValue placeholder="Seleccionar solicitante">
+                      {usuarios.find(u => u.id === creadoPor)?.nombre}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {usuarios.map((u) => (
@@ -142,12 +163,22 @@ export function PedidoForm({ onSubmit, onCancel }: PedidoFormProps) {
                 <Input id="fecha_entrega_esperada" type="date" {...register('fecha_entrega_esperada')} />
               </div>
             </div>
-            
+
+            <div className="space-y-2">
+              <Label htmlFor="notas">Notas</Label>
+              <textarea
+                id="notas"
+                className="w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm"
+                {...register('notas')}
+                placeholder="Notas internas..."
+              />
+            </div>
+
             {/* Sección de Incidencia */}
             <div className="pt-4 border-t">
               <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="tiene_incidencia" 
+                <Checkbox
+                  id="tiene_incidencia"
                   checked={tieneIncidencia}
                   onCheckedChange={(checked) => setValue('tiene_incidencia', checked === true)}
                 />
@@ -261,4 +292,4 @@ export function PedidoForm({ onSubmit, onCancel }: PedidoFormProps) {
 }
 
 
-      
+
