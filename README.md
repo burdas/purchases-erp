@@ -60,6 +60,86 @@ Puedes cargar los datos de prueba (`seed.sql`) de dos formas:
 pnpm dev
 ```
 
+## 📊 Modelo de Datos (ERD)
+
+A continuación se muestra el diagrama entidad-relación de la base de datos, reflejando la estructura actual tras las migraciones (incluyendo la relación 1:1 entre Pedidos y Facturas):
+
+```mermaid
+erDiagram
+    usuario ||--o{ pedido : "creado_por"
+    proveedor ||--o{ pedido : "proveedor_id"
+    proveedor ||--o{ factura : "proveedor_id"
+    pedido ||--o{ linea_pedido : "pedido_id"
+    pedido |o--o| factura : "factura_id"
+
+    usuario {
+        uuid id PK
+        varchar nombre
+        varchar email
+        varchar rol
+        boolean activo
+        timestamptz created_at
+    }
+
+    proveedor {
+        uuid id PK
+        varchar nombre
+        varchar nif
+        varchar email_contacto
+        varchar telefono
+        boolean activo
+        timestamptz created_at
+    }
+
+    pedido {
+        uuid id PK
+        varchar numero
+        uuid proveedor_id FK
+        uuid creado_por FK
+        varchar estado
+        numeric importe_total
+        timestamptz fecha_pedido
+        date fecha_entrega_esperada
+        text notas
+        boolean tiene_incidencia
+        text motivo_incidencia
+        uuid factura_id FK
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    linea_pedido {
+        uuid id PK
+        uuid pedido_id FK
+        varchar descripcion
+        integer cantidad
+        varchar unidad
+        numeric precio_unitario
+        numeric importe_linea
+        integer cantidad_recibida
+        timestamptz fecha_recepcion
+        varchar estado_recepcion
+    }
+
+    factura {
+        uuid id PK
+        varchar numero_factura
+        uuid proveedor_id FK
+        numeric importe_bruto
+        numeric importe_iva
+        numeric importe_total
+        varchar estado
+        date fecha_factura
+        timestamptz fecha_recepcion_doc
+        date fecha_vencimiento
+        text notas
+        boolean tiene_incidencia
+        text motivo_incidencia
+        timestamptz created_at
+        timestamptz updated_at
+    }
+```
+
 ## 🔄 Automatización (GitHub Actions)
 
 El proyecto incluye un workflow de GitHub que sincroniza los datos de prueba:
