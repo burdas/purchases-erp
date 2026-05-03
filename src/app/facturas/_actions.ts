@@ -14,6 +14,18 @@ export async function getFacturas() {
   return data
 }
 
+export async function getFactura(id: string) {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('factura')
+    .select('*, proveedor(nombre, nif, email_contacto, telefono), pedido(id, numero)')
+    .eq('id', id)
+    .single()
+
+  if (error) throw new Error(error.message)
+  return data
+}
+
 export async function createFactura(facturaData: any, pedidosRelacionados: { pedido_id: string }[]) {
   const supabase = await createClient()
 

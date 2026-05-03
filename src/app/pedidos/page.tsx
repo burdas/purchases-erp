@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Eye, AlertCircle, FileText } from 'lucide-react'
+import { Plus, Eye, AlertCircle, FileText, ArrowUpRightIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 
@@ -77,9 +77,11 @@ export default async function PedidosPage() {
                   <TableCell>{pedido.usuario?.nombre}</TableCell> {/* Campo añadido */}
                   <TableCell>{pedido.importe_total?.toFixed(2)}€</TableCell>
                   <TableCell>
-                    {pedido.factura_id ? (
-                      <Badge variant="secondary">
-                        <FileText className="h-3 w-3 mr-1" /> Facturado
+                    {pedido.factura ? (
+                      <Badge variant="secondary" className="cursor-pointer hover:border-gray-500">
+                        <Link href={`/facturas/${pedido.factura.id}`}>
+                          {pedido.factura.numero_factura} <ArrowUpRightIcon className="h-3 w-3 ml-1 inline" />
+                        </Link>
                       </Badge>
                     ) : (
                       <span className="text-gray-400 text-xs">-</span>

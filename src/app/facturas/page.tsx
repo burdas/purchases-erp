@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Eye, AlertCircle, FileText } from 'lucide-react'
+import { Plus, Eye, AlertCircle, FileText, ArrowUpRightIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 
@@ -76,8 +76,10 @@ export default async function FacturasPage() {
                   <TableCell>{factura.importe_total?.toFixed(2)}€</TableCell>
                   <TableCell>
                     {factura.pedido ? (
-                      <Badge variant="secondary">
-                        <FileText className="h-3 w-3 mr-1" /> {factura.pedido.numero}
+                      <Badge variant="secondary" className="cursor-pointer hover:border-gray-500">
+                        <Link href={`/pedidos/${factura.pedido.id}`}>
+                          {factura.pedido.numero} <ArrowUpRightIcon className="h-3 w-3 ml-1 inline" />
+                        </Link>
                       </Badge>
                     ) : (
                       <span className="text-gray-400 text-xs">-</span>
@@ -97,9 +99,11 @@ export default async function FacturasPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" disabled>
-                      <Eye className="h-4 w-4" />
-                    </Button>
+                    <Link href={`/facturas/${factura.id}`}>
+                      <Button variant="ghost" size="icon">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </Link>
                   </TableCell>
                 </TableRow>
               ))
